@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -10,7 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool isLogin = true;
+  bool isLogin = true; // Toggle between login and registration
   bool isPasswordVisible = false;
 
   final TextEditingController nameController = TextEditingController();
@@ -19,7 +20,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
-  void login() {
+  // Hardcoded demo credentials
+  final String correctEmail = "user@example.com";
+  final String correctPassword = "password123";
+
+  // Login method
+  void login() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
@@ -28,10 +34,19 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    showSnackbar("Logged in successfully!", Colors.green);
-    widget.onLoginSuccess();
+    if (email == correctEmail && password == correctPassword) {
+      // Save login state in SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool("isLoggedIn", true);
+
+      showSnackbar("Logged in successfully!", Colors.green);
+      widget.onLoginSuccess();
+    } else {
+      showSnackbar("Invalid email or password", Colors.red);
+    }
   }
 
+  // Registration method
   void register() {
     String name = nameController.text.trim();
     String email = emailController.text.trim();
@@ -52,13 +67,17 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     showSnackbar("Account created successfully!", Colors.green);
-    widget.onLoginSuccess();
+    setState(() {
+      isLogin = true;
+    });
   }
 
+  // Google Sign-In (Placeholder)
   void googleSignIn() {
     showSnackbar("Google Sign-In is not implemented yet", Colors.orange);
   }
 
+  // Snackbar for notifications
   void showSnackbar(String message, Color color) {
     ScaffoldMessenger.of(
       context,
@@ -68,136 +87,248 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
+      backgroundColor: Colors.grey[300],
+      body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.blue,
-                  child: Icon(
-                    Icons.account_circle,
-                    size: 100,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  isLogin ? "Login to Your Account" : "Create an Account",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 50),
 
-                if (!isLogin)
-                  _buildTextField(nameController, "Full Name", Icons.person),
-                if (!isLogin) const SizedBox(height: 16),
+                  // Logo
+                  const Icon(Icons.lock, size: 100, color: Colors.blue),
 
-                _buildTextField(emailController, "Email", Icons.email),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 50),
 
-                _buildPasswordField(passwordController, "Password"),
-                const SizedBox(height: 16),
-
-                if (!isLogin)
-                  _buildPasswordField(
-                    confirmPasswordController,
-                    "Confirm Password",
-                  ),
-                if (!isLogin) const SizedBox(height: 20),
-
-                _buildActionButton(),
-                const SizedBox(height: 12),
-
-                _buildGoogleSignInButton(),
-                const SizedBox(height: 12),
-
-                TextButton(
-                  onPressed: () => setState(() => isLogin = !isLogin),
-                  child: Text(
+                  // Heading
+                  Text(
                     isLogin
-                        ? "Don't have an account? Register"
-                        : "Already have an account? Login",
-                    style: const TextStyle(fontSize: 14),
+                        ? "Welcome back, you've been missed!"
+                        : "Create an Account",
+                    style: TextStyle(color: Colors.grey[700], fontSize: 16),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 25),
+
+                  // Full Name (only in registration mode)
+                  if (!isLogin)
+                    MyTextField(
+                      controller: nameController,
+                      hintText: "Full Name",
+                      obscureText: false,
+                    ),
+                  if (!isLogin) const SizedBox(height: 10),
+
+                  // Email Field
+                  MyTextField(
+                    controller: emailController,
+                    hintText: "Email",
+                    obscureText: false,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Password Field
+                  MyTextField(
+                    controller: passwordController,
+                    hintText: "Password",
+                    obscureText: !isPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed:
+                          () => setState(
+                            () => isPasswordVisible = !isPasswordVisible,
+                          ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Confirm Password (only in registration mode)
+                  if (!isLogin)
+                    MyTextField(
+                      controller: confirmPasswordController,
+                      hintText: "Confirm Password",
+                      obscureText: true,
+                    ),
+                  if (!isLogin) const SizedBox(height: 20),
+
+                  // Login or Register Button
+                  MyButton(
+                    onTap: isLogin ? login : register,
+                    text: isLogin ? "Login" : "Register",
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  // Or continue with
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            thickness: 0.5,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Text(
+                            'Or continue with',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            thickness: 0.5,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  // Google Sign-In Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      SquareTile(imagePath: 'lib/images/apple.png'),
+                      SizedBox(width: 25),
+                      SquareTile(imagePath: 'lib/images/google.png'),
+                    ],
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  // Switch between Login and Register
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        isLogin ? "Not a member?" : "Already have an account?",
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => setState(() => isLogin = !isLogin),
+                        child: Text(
+                          isLogin ? "Register now" : "Login",
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-  ) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-        border: const OutlineInputBorder(),
-      ),
-    );
-  }
+class MyButton extends StatelessWidget {
+  final Function()? onTap;
 
-  Widget _buildPasswordField(TextEditingController controller, String label) {
-    return TextField(
-      controller: controller,
-      obscureText: !isPasswordVisible,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: const Icon(Icons.lock),
-        suffixIcon: IconButton(
-          icon: Icon(
-            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+  const MyButton({
+    super.key,
+    required this.onTap,
+    required String text,
+  }); // NO text parameter
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(25),
+        margin: const EdgeInsets.symmetric(horizontal: 25),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Text(
+            "Sign In", // HARDCODED text here
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
-          onPressed:
-              () => setState(() => isPasswordVisible = !isPasswordVisible),
-        ),
-        border: const OutlineInputBorder(),
-      ),
-    );
-  }
-
-  Widget _buildActionButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: isLogin ? login : register,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-        child: Text(
-          isLogin ? "Login" : "Register",
-          style: const TextStyle(fontSize: 16, color: Colors.white),
         ),
       ),
     );
   }
+}
 
-  Widget _buildGoogleSignInButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: googleSignIn,
-        icon: const Icon(Icons.login, color: Colors.red),
-        label: const Text(
-          "Login with Google",
-          style: TextStyle(color: Colors.red),
-        ),
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.red),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+class SquareTile extends StatelessWidget {
+  final String imagePath;
+  const SquareTile({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white),
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.grey[200],
+      ),
+      child: Image.asset(imagePath, height: 40),
+    );
+  }
+}
+
+class MyTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final bool obscureText;
+  final Widget? suffixIcon; // Add suffixIcon here
+
+  const MyTextField({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    required this.obscureText,
+    this.suffixIcon, // Optional suffixIcon
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        decoration: InputDecoration(
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+          fillColor: Colors.grey.shade200,
+          filled: true,
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          suffixIcon: suffixIcon, // Pass the suffix icon here
         ),
       ),
     );

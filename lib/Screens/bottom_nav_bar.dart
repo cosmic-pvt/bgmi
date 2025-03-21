@@ -7,8 +7,8 @@ class BottomNavBar extends StatelessWidget {
   const BottomNavBar({
     required this.selectedIndex,
     required this.onItemTapped,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class BottomNavBar extends StatelessWidget {
       shape: CircularNotchedRectangle(),
       notchMargin: 8.0,
       color: Colors.black,
-      child: Container(
+      child: SizedBox(
         height: 60,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
