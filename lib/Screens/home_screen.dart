@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => onItemTapped(2),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.purple,
         shape: CircleBorder(),
         child: Icon(
           Icons.account_balance_wallet_rounded,
