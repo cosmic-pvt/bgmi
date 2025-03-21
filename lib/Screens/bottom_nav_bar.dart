@@ -31,7 +31,10 @@ class BottomNavBar extends StatelessWidget {
             IconButton(
               icon: Icon(
                 Icons.schedule_rounded,
-                color: selectedIndex == 1 ? Colors.blue : Colors.white,
+                color:
+                    selectedIndex == 1
+                        ? const Color.fromARGB(255, 183, 136, 53)
+                        : Colors.white,
               ),
               onPressed: () => onItemTapped(1),
             ),
@@ -39,14 +42,20 @@ class BottomNavBar extends StatelessWidget {
             IconButton(
               icon: Icon(
                 Icons.category_rounded,
-                color: selectedIndex == 3 ? Colors.blue : Colors.white,
+                color:
+                    selectedIndex == 3
+                        ? const Color.fromARGB(255, 10, 140, 99)
+                        : Colors.white,
               ),
               onPressed: () => onItemTapped(3),
             ),
             IconButton(
               icon: Icon(
                 Icons.settings_rounded,
-                color: selectedIndex == 4 ? Colors.blue : Colors.white,
+                color:
+                    selectedIndex == 4
+                        ? const Color.fromARGB(255, 165, 13, 13)
+                        : Colors.white,
               ),
               onPressed: () => onItemTapped(4),
             ),
